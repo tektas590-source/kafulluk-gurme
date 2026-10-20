@@ -3,12 +3,13 @@ import { getFirestore } from 'firebase/firestore'
 import { getAuth } from 'firebase/auth'
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: 'AIzaSyCaa10TOV0V36byyRWu-gHiGHnN8u0pQEw',
+  authDomain: 'kafulluk-gurme.firebaseapp.com',
+  projectId: 'kafulluk-gurme',
+  storageBucket: 'kafulluk-gurme.firebasestorage.app',
+  messagingSenderId: '423173579350',
+  appId: '1:423173579350:web:b5940b0bb7b7f3c3afd1f7',
+  measurementId: 'G-FJNZR0PCKM',
 }
 
 const app = initializeApp(firebaseConfig)
