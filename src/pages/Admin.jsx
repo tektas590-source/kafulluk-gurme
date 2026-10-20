@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Plus, Package, ShoppingBag, LogIn, LogOut } from 'lucide-react'
-import { fetchOrders, fetchProducts, updateOrderStatus, updateProduct } from '../services/firestore'
+import { Plus, Package, ShoppingBag, LogIn, LogOut, DollarSign, TrendingUp } from 'lucide-react'
+import { fetchOrders, fetchProducts, updateOrderStatus, updateProduct, addProduct } from '../services/firestore'
+import { categories } from '../data/products'
 
 const ADMIN_EMAIL = 'tektas590@gmail.com'
 const ADMIN_PASS = 'mercedes.55'
@@ -19,12 +20,22 @@ export default function Admin() {
   const [tab, setTab] = useState('orders')
   const [orders, setOrders] = useState([])
   const [products, setProducts] = useState([])
+  const [np, setNp] = useState({ name: '', category: 'sut', weight: '', price: '', stock: '', image: '' })
+
+  const revenue = orders.reduce((s, o) => s + (o.total || 0), 0)
 
   useEffect(() => {
     if (!authed) return
     fetchOrders().then(setOrders).catch(() => {})
     fetchProducts().then(setProducts).catch(() => {})
   }, [authed])
+
+  const handleAddProduct = async (e) => {
+    e.preventDefault()
+    await addProduct({ name: np.name, category: np.category, weight: np.weight, price: Number(np.price), stock: Number(np.stock), image: np.image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400' })
+    setNp({ name: '', category: 'sut', weight: '', price: '', stock: '', image: '' })
+    fetchProducts().then(setProducts)
+  }
 
   const login = (e) => {
     e.preventDefault()
@@ -59,16 +70,27 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-950 text-gray-100">
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
           <h2 className="text-3xl font-extrabold text-white">Satıcı Paneli</h2>
-          <button onClick={logout} className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-sm hover:bg-white/10">
-            <LogOut className="w-4 h-4" /> Çıkış
-          </button>
+          <div className="flex gap-3 flex-wrap">
+            <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-center">
+              <p className="text-xs text-gray-400">Toplam Ciro</p>
+              <p className="text-lg font-bold text-emerald-400 flex items-center gap-1"><TrendingUp className="w-4 h-4" />{revenue} ₺</p>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-center">
+              <p className="text-xs text-gray-400">Sipariş</p>
+              <p className="text-lg font-bold text-amber-400">{orders.length}</p>
+            </div>
+            <button onClick={logout} className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-sm hover:bg-white/10">
+              <LogOut className="w-4 h-4" /> Çıkış
+            </button>
+          </div>
         </div>
         <div className="flex gap-2 mb-6 flex-wrap">
           {[
             { key: 'orders', label: 'Siparişler', icon: ShoppingBag },
             { key: 'products', label: 'Ürünler', icon: Plus },
+            { key: 'add', label: 'Ürün Ekle', icon: Plus },
             { key: 'stock', label: 'Stok & Fiyat', icon: Package },
           ].map(t => (
             <button key={t.key} onClick={() => setTab(t.key)} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition ${tab === t.key ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/30' : 'bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10'}`}>
@@ -113,6 +135,21 @@ export default function Admin() {
               ))}
             </ul>
           </div>
+        )}
+
+        {tab === 'add' && (
+          <form onSubmit={handleAddProduct} className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur space-y-3 max-w-lg">
+            <h3 className="font-semibold flex items-center gap-2 text-white"><Plus className="w-4 h-4 text-amber-400" /> Yeni Ürün Ekle</h3>
+            <input value={np.name} onChange={e => setNp({ ...np, name: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm" placeholder="Ürün Adı" required />
+            <select value={np.category} onChange={e => setNp({ ...np, category: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm">
+              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            <input value={np.weight} onChange={e => setNp({ ...np, weight: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm" placeholder="Gramaj (örn. 500g)" />
+            <input type="number" value={np.price} onChange={e => setNp({ ...np, price: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm" placeholder="Fiyat (₺)" required />
+            <input type="number" value={np.stock} onChange={e => setNp({ ...np, stock: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm" placeholder="Stok" required />
+            <input value={np.image} onChange={e => setNp({ ...np, image: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm" placeholder="Görsel URL" />
+            <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-xl font-semibold transition">Kaydet</button>
+          </form>
         )}
 
         {tab === 'stock' && (
