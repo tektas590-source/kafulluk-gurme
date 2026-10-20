@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react'
 
 export default function ProductCard({ product, onAdd }) {
+  const out = (product.stock ?? 0) <= 0
   return (
     <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group">
       <div className="overflow-hidden">
@@ -13,12 +14,13 @@ export default function ProductCard({ product, onAdd }) {
           <span className="text-lg font-bold text-amber-700">{product.price} ₺</span>
           <button
             onClick={() => onAdd(product)}
-            className="flex items-center gap-1 bg-amber-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-amber-700 transition shadow-sm"
+            disabled={out}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm transition shadow-sm ${out ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-amber-600 text-white hover:bg-amber-700'}`}
           >
-            <Plus className="w-4 h-4" /> Sepete Ekle
+            <Plus className="w-4 h-4" /> {out ? 'Stokta Yok' : 'Sepete Ekle'}
           </button>
         </div>
-        <p className="text-xs text-gray-400 mt-2">Stok: {product.stock}</p>
+        <p className="text-xs text-gray-400 mt-2">Stok: {product.stock ?? 0}</p>
       </div>
     </div>
   )
