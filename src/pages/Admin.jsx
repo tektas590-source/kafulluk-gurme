@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Plus, Package, DollarSign, TrendingUp, ShoppingBag } from 'lucide-react'
+import { Plus, Package, ShoppingBag, LogIn, LogOut } from 'lucide-react'
 import { fetchOrders, fetchProducts, updateOrderStatus, updateProduct } from '../services/firestore'
+
+const ADMIN_EMAIL = 'tektas590@gmail.com'
+const ADMIN_PASS = 'mercedes.55'
 
 const statusColor = {
   'Hazırlanıyor': 'bg-amber-500/20 text-amber-300',
@@ -9,19 +12,59 @@ const statusColor = {
 }
 
 export default function Admin() {
+  const [authed, setAuthed] = useState(() => localStorage.getItem('adminAuth') === '1')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [err, setErr] = useState('')
   const [tab, setTab] = useState('orders')
   const [orders, setOrders] = useState([])
   const [products, setProducts] = useState([])
 
   useEffect(() => {
+    if (!authed) return
     fetchOrders().then(setOrders).catch(() => {})
     fetchProducts().then(setProducts).catch(() => {})
-  }, [])
+  }, [authed])
+
+  const login = (e) => {
+    e.preventDefault()
+    if (email === ADMIN_EMAIL && password === ADMIN_PASS) {
+      localStorage.setItem('adminAuth', '1')
+      setAuthed(true)
+      setErr('')
+    } else {
+      setErr('Hatalı e-posta veya şifre')
+    }
+  }
+
+  const logout = () => {
+    localStorage.removeItem('adminAuth')
+    setAuthed(false)
+  }
+
+  if (!authed) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-950 text-gray-100 flex items-center justify-center px-4">
+        <form onSubmit={login} className="bg-white/5 border border-white/10 rounded-2xl p-8 w-full max-w-md backdrop-blur space-y-4">
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2"><LogIn className="w-5 h-5 text-amber-400" /> Admin Girişi</h2>
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="E-posta" className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm" />
+          <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Şifre" className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm" />
+          {err && <p className="text-red-400 text-sm">{err}</p>}
+          <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-xl font-semibold transition">Giriş Yap</button>
+        </form>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-950 text-gray-100">
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <h2 className="text-3xl font-extrabold text-white mb-8">Satıcı Paneli</h2>
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-3xl font-extrabold text-white">Satıcı Paneli</h2>
+          <button onClick={logout} className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-sm hover:bg-white/10">
+            <LogOut className="w-4 h-4" /> Çıkış
+          </button>
+        </div>
         <div className="flex gap-2 mb-6 flex-wrap">
           {[
             { key: 'orders', label: 'Siparişler', icon: ShoppingBag },
